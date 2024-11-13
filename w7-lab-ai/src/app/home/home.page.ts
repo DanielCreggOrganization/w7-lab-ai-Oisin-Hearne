@@ -9,6 +9,7 @@ import { IonHeader, IonToolbar, IonTitle, IonContent,
          IonRippleEffect } from '@ionic/angular/standalone';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { environment } from '../../environments/environment';
+import { GeminiAiService } from '../services/gemini-ai.service';
 
 @Component({
   selector: 'app-home',
@@ -42,14 +43,17 @@ import { environment } from '../../environments/environment';
   ]
 })
 export class HomePage {
+
+  constructor(private geminiService: GeminiAiService) {}
+
   prompt = 'Please provide a recipe for the baked goods attached in the image, using the metric system.'; 
   output = '';
   isLoading = false;
 
   availableImages = [
-    { url: 'assets/images/baked_goods_1.jpg', label: 'Baked Good 1' },
-    { url: 'assets/images/baked_goods_2.jpg', label: 'Baked Good 2' },
-    { url: 'assets/images/baked_goods_3.jpg', label: 'Baked Good 3' }
+    { url: 'assets/images/baked_goods_1.jpg', label: 'Criossants' },
+    { url: 'assets/images/baked_goods_2.jpg', label: 'Cookies' },
+    { url: 'assets/images/baked_goods_3.jpg', label: 'Muffins' }
   ];
 
   selectedImage = this.availableImages[0].url;
@@ -59,47 +63,15 @@ export class HomePage {
   }
 
   selectImage(url: string) {
-    // TODO: Set the selectedImage property
-    // HINT: this.selectedImage = url;
+    this.selectedImage = url;
   }
 
   async onSubmit() {
     if (this.isLoading) return;
     this.isLoading = true;
     
-    try {
-      const response = await fetch(this.selectedImage);
-      const blob = await response.blob();
-      const base64data = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(blob);
-      });
-      const base64String = base64data.split(',')[1];
-  
-      const genAI = new GoogleGenerativeAI(environment.apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      
-      const result = await model.generateContent({
-        contents: [{
-          role: 'user',
-          parts: [
-            { 
-              inlineData: { 
-                mimeType: 'image/jpeg', 
-                data: base64String
-              } 
-            },
-            { text: this.prompt }
-          ]
-        }]
-      });
-      
-      this.output = result.response.text();
-      
-    } catch (e) {
-      this.output = `Error: ${e instanceof Error ? e.message : 'Something went wrong'}`;
-    }
+    const base64image = await this.geminiService.getImageAsBase64(this.selectedImage);
+    this.output = await this.geminiService.generateRecipe(base64image, this.prompt);
     
     this.isLoading = false;
   }
