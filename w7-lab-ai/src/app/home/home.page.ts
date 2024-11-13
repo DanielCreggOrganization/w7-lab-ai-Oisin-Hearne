@@ -46,7 +46,7 @@ export class HomePage {
 
   constructor(private geminiService: GeminiAiService) {}
 
-  prompt = 'Please provide a recipe for the baked goods attached in the image, using the metric system.'; 
+  prompt = 'Please provide a recipe for the baked goods attached in the image, using the metric system and formatted in HTML.'; 
   output = '';
   isLoading = false;
 

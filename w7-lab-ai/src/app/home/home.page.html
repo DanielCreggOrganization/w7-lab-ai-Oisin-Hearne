@@ -5,7 +5,7 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <form ng-submit="onSubmit()">
+  <form>
     <!-- Image selection grid -->
     <ion-grid>
       <ion-row>
@@ -45,6 +45,7 @@
         ></ion-textarea>
         <ion-button 
           type="submit" 
+          (click)="onSubmit()"
           expand="block"
           class="ion-margin-top"
           [disabled]="isLoading"
